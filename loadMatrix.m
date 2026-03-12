@@ -2,21 +2,21 @@
 Matrix = 0 * Matrix;
 RHS = 0 * RHS;
 
-% Zero the matrix and the rhs.
-Matrix = 0 * Matrix;
-RHS = 0 * RHS;
-
 % Load the resistors.
 for i = 1:size(Resistors,1)
  n1 = Resistors(i,2);
  n2 = Resistors(i,3);
  res = Resistors(i,1);
- if n1 > 0 Matrix(n1, n1) = Matrix(n1,n1) + 1/res; end;
- if n2 > 0 Matrix(n2, n2) = Matrix(n2,n2) + 1/res; end;
- if ((n1>0) & (n2>0))
+ if n1 > 0 
+     Matrix(n1, n1) = Matrix(n1,n1) + 1/res; 
+ end
+ if n2 > 0 
+     Matrix(n2, n2) = Matrix(n2,n2) + 1/res; 
+ end
+ if ((n1>0) && (n2>0))
    Matrix(n1, n2) = Matrix(n1,n2) - 1/res; 
    Matrix(n2, n1) = Matrix(n2,n1) - 1/res; 
- end;
+ end
 end
 
 % Load the VCCSs
@@ -26,18 +26,18 @@ for i = 1:size(Csources,1)
  n3 = Csources(i,4);
  n4 = Csources(i,5);
  gm = Csources(i,1);
- if ((n1>0) & (n3 > 0))
+ if ((n1>0) && (n3 > 0))
    Matrix(n1, n3) = Matrix(n1,n3) + gm;
- end; 
- if ((n1>0) & (n4 > 0) )
+ end 
+ if ((n1>0) && (n4 > 0) )
     Matrix(n1, n4) = Matrix(n1,n4) - gm;
- end; 
- if ((n2>0) & (n3 > 0))
+ end
+ if ((n2>0) && (n3 > 0))
   Matrix(n2, n3) = Matrix(n2,n3) - gm;
- end; 
- if ((n2>0) & (n4 > 0))
+ end
+ if ((n2>0) && (n4 > 0))
   Matrix(n2, n4) = Matrix(n2,n4) + gm;
- end; 
+ end
 end
 
 % Load the current sources.
@@ -45,9 +45,28 @@ for i = 1:size(Isources,1)
  n1 = Isources(i,2);
  n2 = Isources(i,3);
  is = Isources(i,1);
- if (n1 > 0) RHS(n1) = RHS(n1) - is; end;
- if (n2 > 0) RHS(n2) = RHS(n2) + is; end;
+ if (n1 > 0) 
+     RHS(n1) = RHS(n1) - is; end
+ if (n2 > 0) 
+     RHS(n2) = RHS(n2) + is; end
 end
+
+% Load voltage sources
+for i = 1:length(sourcenodes)
+    if sourcenodes(i) ~= 0
+        % Move known value of voltage from left side to RHS as current
+        RHS = RHS - Matrix(:, i)' * sourcenodes(i);
+
+        % Reset row and col for the node where Vsource is
+        Matrix(i, :) = 0;
+        Matrix(:, i) = 0;
+
+        % Insert equation: 1 * v_i = E_i
+        Matrix(i, i) = 1;
+        RHS(i) = sourcenodes(i);
+    end
+end
+
 
 % Eliminate any last rows with purely zeros.
  realLength = length(RHS);
@@ -62,7 +81,9 @@ end
 
 % Put a one on the diagonal of any purely zero row in Matrix.
 for i = 1:length(RHS)
- if(norm(Matrix(i,:)) == 0) Matrix(i,i) = 1; end;
+ if(norm(Matrix(i,:)) == 0) 
+     Matrix(i,i) = 1; 
+ end
 end
 
 % b and G contain the reduced matrices without the extra zero rows. 
