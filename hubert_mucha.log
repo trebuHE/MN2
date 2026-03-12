@@ -1,0 +1,49 @@
+file = 'test.ckt'
+
+file =
+
+    'test.ckt'
+
+readckt
+loadMatrix
+v = G \ b
+
+v =
+
+    9.9751
+    7.4813
+    4.9875
+    2.4938
+
+clear all
+file = 'test2.ckt'
+
+file =
+
+    'test2.ckt'
+
+readckt
+loadMatrix
+v = G \ b
+
+v =
+
+    9.9834
+    8.3223
+    6.6611
+    5.0000
+
+clear all
+plotD
+
+file =
+
+    'dirichlet.ckt'
+
+plotN
+
+file =
+
+    'neumann.ckt'
+
+diary end
